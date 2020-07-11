@@ -17,9 +17,9 @@ public:
 
 class File {
 private:
-  std::fstream stream;
+  std::fstream *stream;
 public:
   File(std::string path);
-  std::fstream get_stream();
+  std::fstream *get_stream();
   int get_size();
 };
