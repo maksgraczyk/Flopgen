@@ -1,5 +1,6 @@
 #include "filediskio.h"
 #include "classes.hpp"
+#include <iostream>
 
 #define SECTOR_SIZE 512
 
@@ -7,9 +8,11 @@ using namespace std;
 
 static File *file_disk = NULL;
 static string *path = NULL;
+static int bytes_count = 0;
 
-void file_disk_setup(const char *filename) {
+void file_disk_setup(const char *filename, int bytes) {
   path = new string(filename);
+  bytes_count = bytes;
 }
 
 void file_disk_free() {
@@ -36,8 +39,24 @@ DSTATUS file_disk_initialize() {
   if (path == NULL) {
     return STA_NOINIT;
   }
+
+  if (file_disk == NULL) {
+    file_disk = new File(*path, true);
+    fstream *stream = file_disk->get_stream();
+
+    for (int i = 0; i < bytes_count; i++) {
+      *stream << (char) 0;
+
+      if (stream->rdstate()) {
+        cout << stream->rdstate() << endl;
+        return STA_NOINIT;
+      }
+    }
+
+    stream->flush();
+    stream->sync();
+  }
   
-  file_disk = new File(*path);
   return file_disk_status();
 }
 
@@ -54,7 +73,7 @@ DRESULT file_disk_read(BYTE *buff, LBA_t sector, UINT count) {
   
   stream->read((char *) buff, byte_size);
 
-  if (stream->rdstate()) {
+  if (stream->rdstate() && !stream->eof()) {
     return RES_ERROR;
   }
   
@@ -66,7 +85,7 @@ DRESULT file_disk_write(const BYTE *buff, LBA_t sector, UINT count) {
   streamsize byte_size = count * SECTOR_SIZE;
   streampos byte_start = sector * SECTOR_SIZE;
 
-  stream->seekg(byte_start, ios::beg);
+  stream->seekp(byte_start, ios::beg);
 
   if (stream->rdstate()) {
     return RES_ERROR;
@@ -78,6 +97,9 @@ DRESULT file_disk_write(const BYTE *buff, LBA_t sector, UINT count) {
     return RES_ERROR;
   }
 
+  stream->flush();
+  stream->sync();
+
   return RES_OK;
 }
 
@@ -86,13 +108,16 @@ DRESULT file_disk_ioctl(BYTE cmd, void *buff) {
   
   switch (cmd) {
   case GET_SECTOR_COUNT:
-    *int_buff = file_disk->get_size() / SECTOR_SIZE;
+    *int_buff = bytes_count / SECTOR_SIZE;
+    break;
 
   case GET_SECTOR_SIZE:
     *int_buff = SECTOR_SIZE;
+    break;
 
   case GET_BLOCK_SIZE:
-    *int_buff = SECTOR_SIZE;
+    *int_buff = 1;
+    break;
   }
 
   return RES_OK;

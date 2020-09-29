@@ -7,7 +7,7 @@
 #include "fatfs/diskio.h"
 #include <stdbool.h>
 
-void file_disk_setup(const char *filename);
+void file_disk_setup(const char *filename, int bytes);
 void file_disk_free();
 
 DSTATUS file_disk_status();
