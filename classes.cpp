@@ -60,7 +60,11 @@ bool Floppy::save(string filename) {
   options.au_size = 0;
   options.align = 0;
   options.n_fat = 2;
-  options.n_root = 0;
+  options.n_root = 224;
+  options.mdt = 0xF0;
+  options.sec_per_track = 18;
+  options.n_heads = 2;
+  options.d_num = 0x00;
 
   BYTE buf[FF_MAX_SS];
   
