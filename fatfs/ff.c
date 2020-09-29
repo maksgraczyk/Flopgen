@@ -5838,7 +5838,7 @@ FRESULT f_mkfs (
 {
 	static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};	/* Cluster size boundary for FAT volume (4Ks unit) */
 	static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};	/* Cluster size boundary for FAT32 volume (128Ks unit) */
-	static const MKFS_PARM defopt = {FM_ANY, 0, 0, 0, 0};	/* Default parameter */
+	static const MKFS_PARM defopt = {FM_ANY, 0, 0, 0, 0, 0xF8, 63, 255, 0x80};	/* Default parameter */
 	BYTE fsopt, fsty, sys, *buf, *pte, pdrv, ipart;
 	WORD ss;	/* Sector size */
 	DWORD sz_buf, sz_blk, n_clst, pau, nsect, n;
@@ -6219,9 +6219,9 @@ FRESULT f_mkfs (
 		} else {
 			st_dword(buf + BPB_TotSec32, (DWORD)sz_vol);	/* Volume size in 32-bit LBA */
 		}
-		buf[BPB_Media] = 0xF8;							/* Media descriptor byte */
-		st_word(buf + BPB_SecPerTrk, 63);				/* Number of sectors per track (for int13) */
-		st_word(buf + BPB_NumHeads, 255);				/* Number of heads (for int13) */
+		buf[BPB_Media] = opt->mdt;							/* Media descriptor byte */
+		st_word(buf + BPB_SecPerTrk, opt->sec_per_track);				/* Number of sectors per track (for int13) */
+		st_word(buf + BPB_NumHeads, opt->n_heads);				/* Number of heads (for int13) */
 		st_dword(buf + BPB_HiddSec, (DWORD)b_vol);		/* Volume offset in the physical drive [sector] */
 		if (fsty == FS_FAT32) {
 			st_dword(buf + BS_VolID32, GET_FATTIME());	/* VSN */
@@ -6229,13 +6229,13 @@ FRESULT f_mkfs (
 			st_dword(buf + BPB_RootClus32, 2);			/* Root directory cluster # (2) */
 			st_word(buf + BPB_FSInfo32, 1);				/* Offset of FSINFO sector (VBR + 1) */
 			st_word(buf + BPB_BkBootSec32, 6);			/* Offset of backup VBR (VBR + 6) */
-			buf[BS_DrvNum32] = 0x80;					/* Drive number (for int13) */
+			buf[BS_DrvNum32] = opt->d_num;					/* Drive number (for int13) */
 			buf[BS_BootSig32] = 0x29;					/* Extended boot signature */
 			mem_cpy(buf + BS_VolLab32, "NO NAME    " "FAT32   ", 19);	/* Volume label, FAT signature */
 		} else {
 			st_dword(buf + BS_VolID, GET_FATTIME());	/* VSN */
 			st_word(buf + BPB_FATSz16, (WORD)sz_fat);	/* FAT size [sector] */
-			buf[BS_DrvNum] = 0x80;						/* Drive number (for int13) */
+			buf[BS_DrvNum] = opt->d_num;						/* Drive number (for int13) */
 			buf[BS_BootSig] = 0x29;						/* Extended boot signature */
 			mem_cpy(buf + BS_VolLab, "NO NAME    " "FAT     ", 19);	/* Volume label, FAT signature */
 		}
