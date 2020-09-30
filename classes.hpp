@@ -1,3 +1,6 @@
+#ifndef _CLASSES_HPP
+#define _CLASSES_HPP
+
 #include <string>
 #include <vector>
 #include <fstream>
@@ -24,3 +27,5 @@ public:
   bool add_file(File file);
   bool save(std::string filename);
 };
+
+#endif
