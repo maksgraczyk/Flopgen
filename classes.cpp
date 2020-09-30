@@ -1,6 +1,5 @@
 #include "classes.hpp"
-#include "fatfs/ff.h"
-#include "filediskio.h"
+#include "image.hpp"
 #include <filesystem>
 #include <iostream>
 
@@ -51,83 +50,21 @@ bool Floppy::add_file(File file) {
 }
 
 bool Floppy::save(string filename) {
-  file_disk_setup(filename.c_str(), FLOPPY_SIZE);
+  Image image(filename, FLOPPY_SIZE);
 
-  FATFS fs;
-  
-  MKFS_PARM options;
-  options.fmt = FM_FAT | FM_SFD;
-  options.au_size = 0;
-  options.align = 0;
-  options.n_fat = 2;
-  options.n_root = 224;
-  options.mdt = 0xF0;
-  options.sec_per_track = 18;
-  options.n_heads = 2;
-  options.d_num = 0x00;
-
-  BYTE buf[FF_MAX_SS];
-  
-  FRESULT res = f_mkfs("", &options, buf, sizeof(buf));
-
-  if (res != 0) {
-    goto error;
-  }
-
-  res = f_mount(&fs, "", 0);
-
-  if (res != 0) {
-    goto error;
+  if (!image.is_open()) {
+    return false;
   }
 
   for (unsigned long i = 0; i < files.size(); i++) {
-    File file_object = files[i];
-    fstream *stream = file_object.get_stream();
-    UINT size = file_object.get_size();
+    bool success = image << files[i];
 
-    FIL file;
-
-    res = f_open(&file, file_object.get_filename().c_str(),
-                 FA_WRITE | FA_CREATE_ALWAYS);
-
-    if (res != 0) {
-      goto error;
-    }
-
-    char *buffer = new char[size];
-
-    if (buffer == NULL) {
-      goto error;
-    }
-
-    stream->seekg(0, ios::beg);
-    stream->read(buffer, size);
-
-    if (stream->rdstate() && !stream->eof()) {
-      delete [] buffer;
-      goto error;
-    }
-
-    UINT bytes_written = 0;
-    res = f_write(&file, buffer, size, &bytes_written);
-
-    delete [] buffer;
-    
-    if (res != 0 || bytes_written != size) {
-      goto error;
-    }
-
-    res = f_close(&file);
-
-    if (res != 0) {
-      goto error;
+    if (!success) {
+      image.close();
+      return false;
     }
   }
   
-  file_disk_free();
+  image.close();
   return true;
-
- error:
-  file_disk_free();
-  return false;
 }
