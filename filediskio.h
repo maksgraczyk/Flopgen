@@ -1,7 +1,7 @@
 /* A low-level file disk interface required for FatFs */
 
-#ifndef _FILEDISKIO
-#define _FILEDISKIO
+#ifndef _FILEDISKIO_H
+#define _FILEDISKIO_H
 
 #include "fatfs/ff.h"
 #include "fatfs/diskio.h"
