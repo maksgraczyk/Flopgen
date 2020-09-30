@@ -1,45 +1,96 @@
 #include "classes.hpp"
 #include "image.hpp"
-#include <filesystem>
 #include <iostream>
 
 using namespace std;
 
-File::File(string path, bool image) {
-  if (image) {
-    stream = new fstream(path, ios::in | ios::out | ios::binary | ios::trunc);
+/*** File class begins here ***/
+
+File::File(filesystem::path path, bool image, bool init_stream) {
+  if (init_stream) {
+    if (image) {
+      stream = new fstream(path,
+                           ios::in | ios::out | ios::binary | ios::trunc);
+    } else {
+      stream = new fstream(path, ios::in | ios::binary);
+    }
   } else {
-    stream = new fstream(path, ios::in | ios::binary);
+    stream = NULL;
   }
   
-  stream = new fstream(path, ios::in | ios::out | ios::binary);
-  filename = filesystem::path(path).filename();
+  this->path = path;
 }
 
 fstream *File::get_stream() {
   return stream;
 }
 
-string File::get_filename() {
-  return filename;
+bool File::is_directory() {
+  return false;
+}
+
+string File::get_path_str() {
+  return path.generic_string();
 }
 
 int File::get_size() {
-  streampos original = stream->tellg();
-  stream->seekg(0, ios::beg);
-  streampos begin = stream->tellg();
-  stream->seekg(0, ios::end);
-  streampos end = stream->tellg();
-  stream->seekg(original);
-  return end - begin;
+  return filesystem::file_size(path);
 }
+
+/*** File class ends here ***/
+
+/*** Directory class begins here ***/
+
+Directory::Directory(filesystem::path path) : File(path, false, false) {
+  filesystem::directory_iterator dir(this->path);
+  total_size = 0;
+
+  for (const filesystem::directory_entry &entry : dir) {
+    if (entry.is_regular_file()) {
+      File *file = new File(entry.path(), false);
+      files.push_back(file);
+      total_size += file->get_size();
+    } else if (entry.is_directory()) {
+      File *directory = new Directory(entry.path());
+      files.push_back(directory);
+      total_size += directory->get_size();
+    } else {
+      cerr << entry.path()
+           << " is neither a directory nor a regular file, ignoring." << endl;
+    }
+  }
+}
+
+fstream *Directory::get_stream() {
+  return NULL;
+}
+
+bool Directory::is_directory() {
+  return true;
+}
+
+int Directory::get_size() {
+  return total_size;
+}
+
+File *Directory::operator[](int index) {
+  return files[index];
+}
+
+int Directory::get_file_count() {
+  return files.size();
+}
+
+/*** Directory class ends here ***/
+
+/*** Floppy class begins here ***/
 
 Floppy::Floppy() {
   free_space = FLOPPY_SIZE;
 }
 
-bool Floppy::add_file(File file) {
-  int size = file.get_size();
+bool Floppy::add_file(File *file) {
+  int size = file->get_size();
   
   if (size > free_space) {
     return false;
@@ -68,3 +119,5 @@ bool Floppy::save(string filename) {
   image.close();
   return true;
 }
+
+/*** Floppy class ends here ***/
