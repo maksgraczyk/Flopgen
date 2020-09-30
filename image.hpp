@@ -9,10 +9,12 @@ class Image {
 private:
   bool open;
   FATFS *fs;
+  bool add_file(File *file_object);
+  bool add_directory(Directory *dir);
 public:
   Image(std::string filename, int bytes);
   bool is_open();
-  bool operator<<(File file_object);
+  bool operator<<(File *file_object);
   void close();
 };
 

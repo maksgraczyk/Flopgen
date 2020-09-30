@@ -50,13 +50,13 @@ bool Image::is_open() {
   return open;
 }
 
-bool Image::operator<<(File file_object) {
-  fstream *stream = file_object.get_stream();
-  UINT size = file_object.get_size();
+bool Image::add_file(File *file_object) {
+  fstream *stream = file_object->get_stream();
+  UINT size = file_object->get_size();
 
   FIL file;
 
-  FRESULT res = f_open(&file, file_object.get_filename().c_str(),
+  FRESULT res = f_open(&file, file_object->get_path_str().c_str(),
                        FA_WRITE | FA_CREATE_ALWAYS);
 
   if (res != 0) {
@@ -93,6 +93,30 @@ bool Image::operator<<(File file_object) {
   }
 
   return true;
+}
+
+bool Image::add_directory(Directory *dir) {
+  FRESULT res = f_mkdir(dir->get_path_str().c_str());
+
+  if (res != 0 && res != FR_EXIST) {
+    return false;
+  }
+
+  for (int i = 0; i < dir->get_file_count(); i++) {
+    if (!add_file((*dir)[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Image::operator<<(File *file_object) {
+  if (file_object->is_directory()) {
+    return add_directory((Directory *) file_object);
+  } else {
+    return add_file(file_object);
+  }
 }
 
 void Image::close() {
