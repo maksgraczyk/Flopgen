@@ -12,7 +12,7 @@ private:
   bool add_file(File *file_object);
   bool add_directory(Directory *dir);
 public:
-  Image(std::string filename, int bytes);
+  Image(std::string filename, FloppySize size, int code_page);
   bool is_open();
   bool operator<<(File *file_object);
   void close();

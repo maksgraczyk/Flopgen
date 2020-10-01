@@ -3,23 +3,62 @@
 
 using namespace std;
 
-Image::Image(string filename, int bytes) {
-  file_disk_setup(filename.c_str(), bytes);
+Image::Image(string filename, FloppySize size, int code_page) {
+  file_disk_setup(filename.c_str(), size * BYTES_IN_KB);
+
+  FRESULT res = f_setcp(code_page);
+
+  if (res != 0) {
+    goto error;
+  }
 
   MKFS_PARM options;
-  options.fmt = FM_FAT | FM_SFD;
-  options.au_size = 0;
+  options.fmt = FM_SFD | FM_FAT;
   options.align = 0;
   options.n_fat = 2;
-  options.n_root = 224;
-  options.mdt = 0xF0;
-  options.sec_per_track = 18;
   options.n_heads = 2;
   options.d_num = 0x00;
+  
+  switch (size) {
+  case _360K:
+    options.au_size = 1024;
+    options.n_root = 112;
+    options.mdt = 0xFD;
+    options.sec_per_track = 9;
+    break;
+
+  case _720K:
+    options.au_size = 1024;
+    options.n_root = 112;
+    options.mdt = 0xF9;
+    options.sec_per_track = 9;
+    break;
+
+  case _1200K:
+    options.au_size = 512;
+    options.n_root = 224;
+    options.mdt = 0xF9;
+    options.sec_per_track = 15;
+    break;
+
+  case _1440K:
+    options.au_size = 512;
+    options.n_root = 224;
+    options.mdt = 0xF0;
+    options.sec_per_track = 18;
+    break;
+
+  case _2880K:
+    options.au_size = 1024;
+    options.n_root = 224;
+    options.mdt = 0xF0;
+    options.sec_per_track = 36;
+    break;
+  }
 
   BYTE buf[FF_MAX_SS];
 
-  FRESULT res = f_mkfs("", &options, buf, sizeof(buf));
+  res = f_mkfs("", &options, buf, sizeof(buf));
 
   if (res != 0) {
     goto error;
