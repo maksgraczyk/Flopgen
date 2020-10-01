@@ -21,6 +21,32 @@ File::File(filesystem::path path, bool image, bool init_stream) {
   this->path = path;
 }
 
+File *File::get_instance(string path) {
+  filesystem::path fs_path(path);
+  File *instance;
+
+  if (!filesystem::exists(fs_path)) {
+    cerr << fs_path << " does not exist, ignoring." << endl;
+    return NULL;
+  }
+  
+  if (filesystem::is_directory(fs_path)) {
+    instance = new Directory(fs_path);
+  } else if (filesystem::is_regular_file(fs_path)) {
+    instance = new File(fs_path, false, true);
+  } else {
+    cerr << fs_path.generic_string();
+    cerr << " is neither a directory nor a regular file, ignoring." << endl;
+    return NULL;
+  }
+
+  if (instance == NULL) {
+    cerr << "Could not allocate memory for " << path << ", ignoring." << endl;
+  }
+
+  return instance;
+}
+
 fstream *File::get_stream() {
   return stream;
 }
@@ -55,7 +81,7 @@ Directory::Directory(filesystem::path path) : File(path, false, false) {
       files.push_back(directory);
       total_size += directory->get_size();
     } else {
-      cerr << entry.path()
+      cerr << entry.path().generic_string()
            << " is neither a directory nor a regular file, ignoring." << endl;
     }
   }
@@ -85,23 +111,46 @@ int Directory::get_file_count() {
 
 /*** Floppy class begins here ***/
 
-Floppy::Floppy() {
-  free_space = FLOPPY_SIZE;
+Floppy::Floppy(FloppySize size, int code_page) {
+  this->size = size;
+  this->code_page = code_page;
+
+  switch (size) {
+  case _360K:
+  case _720K:
+  case _2880K:
+    cluster_size = 1024;
+    break;
+
+  default:
+    cluster_size = 512;
+    break;
+  }
+  
+  free_space = (size * BYTES_IN_KB) / cluster_size - 2;
 }
 
 bool Floppy::add_file(File *file) {
-  int size = file->get_size();
+  int file_size = file->get_size();
+  int cl_size = file_size / cluster_size
+    + (file_size % cluster_size > 0) * cluster_size;
   
-  if (size > free_space) {
+  if (cl_size > free_space) {
     return false;
   }
 
   files.push_back(file);
+  free_space -= cl_size;
+  
   return true;
 }
 
+int Floppy::get_size() {
+  return size * BYTES_IN_KB;
+}
+
 bool Floppy::save(string filename) {
-  Image image(filename, FLOPPY_SIZE);
+  Image image(filename, size, code_page);
 
   if (!image.is_open()) {
     return false;

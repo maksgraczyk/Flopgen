@@ -6,7 +6,7 @@
 #include <fstream>
 #include <filesystem>
 
-#define FLOPPY_SIZE 1474560
+#define BYTES_IN_KB 1024
 
 class File {
 private:
@@ -15,6 +15,7 @@ protected:
   std::filesystem::path path;
 public:
   File(std::filesystem::path path, bool image, bool init_stream=true);
+  static File *get_instance(std::string path);
   virtual std::fstream *get_stream();
   std::string get_path_str();
   virtual bool is_directory();
@@ -34,13 +35,25 @@ public:
   int get_file_count();
 };
 
+enum FloppySize {
+  _360K = 360,
+  _720K = 720,
+  _1200K = 1200,
+  _1440K = 1440,
+  _2880K = 2880
+};
+
 class Floppy {
 private:
   std::vector<File *> files;
+  FloppySize size;
   int free_space;
+  int cluster_size;
+  int code_page;
 public:
-  Floppy();
+  Floppy(FloppySize size, int code_page);
   bool add_file(File *file);
+  int get_size();
   bool save(std::string filename);
 };
 
