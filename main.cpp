@@ -1,7 +1,6 @@
 #include "classes.hpp"
 #include <iostream>
 #include "cli/CLI11.hpp"
-#include <algorithm>
 
 using namespace std;
 
@@ -21,7 +20,7 @@ bool run(Options &options);
 
 int main(int argc, char** argv) {
   CLI::App app
-    {"Flopgen: a tool for automatic creation of IMG floppy images"};
+    {"Flopgen: a tool for automatic creation of IMG floppy disk images"};
 
   Options options;
 
@@ -156,11 +155,13 @@ bool run(Options &options) {
   }
 
   int count = 1;
+  bool at_least_one_file = false;
   
   for (File *file : files) {
     if (file->get_size() > current_floppy->get_size()) {
-      cerr << file->get_path_str() << " is larger than the image size, "
-        "ignoring." << endl;
+      cerr << file->get_path_str() << " "
+           << (file->is_directory() ? "(directory)" : "")
+           << " is larger than the image size, ignoring." << endl;
       continue;
     }
 
@@ -193,10 +194,35 @@ bool run(Options &options) {
         return false;
       }
 
-      current_floppy->add_file(file);
+      if (!current_floppy->add_file(file)) {
+        cerr << "Could not add " << file->get_path_str() << " "
+             << (file->is_directory() ? "(directory)" : "") << " to an image "
+             << "for the second time due to an error, aborting." << endl;
+
+        delete current_floppy;
+
+        for (File *file : files) {
+          delete file;
+        }
+
+        return false;
+      }
     }
+
+    at_least_one_file = true;
   }
 
+  if (!at_least_one_file) {
+    delete current_floppy;
+
+    for (File *file : files) {
+      delete file;
+    }
+    
+    cerr << "There are no files/directories to be added to images!" << endl;
+    return false;
+  }
+  
   bool result = current_floppy->save(options.output_filename + to_string(count)
                                      + ".img");
 
@@ -207,12 +233,12 @@ bool run(Options &options) {
   }
 
   if (!result) {
-    cerr << "Could not produce a floppy image number " << count
+    cerr << "Could not produce a floppy disk image number " << count
          << " due to an error, aborting." << endl;
     return false;
   }
 
-  cout << "Successfully created " << count << " floppy image"
+  cout << "Successfully created " << count << " floppy disk image"
        << (count > 1 ? "s" : "") << "." << endl;
 
   return result;
