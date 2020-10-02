@@ -97,13 +97,14 @@ bool Image::is_open() {
   return open;
 }
 
-bool Image::add_file(File *file_object) {
+bool Image::add_file(File *file_object, bool path_with_dirs) {
   fstream *stream = file_object->get_stream();
   UINT size = file_object->get_size();
 
   FIL file;
 
-  FRESULT res = f_open(&file, file_object->get_path_str().c_str(),
+  FRESULT res = f_open(&file,
+                       file_object->get_path_str(path_with_dirs).c_str(),
                        FA_WRITE | FA_CREATE_ALWAYS);
 
   if (res != 0) {
@@ -150,7 +151,11 @@ bool Image::add_directory(Directory *dir) {
   }
 
   for (int i = 0; i < dir->get_file_count(); i++) {
-    if (!(*this << (*dir)[i])) {
+    File *file = (*dir)[i];
+
+    if (file->is_directory() && !add_directory((Directory *) file)) {
+      return false;
+    } else if (!add_file(file)) {
       return false;
     }
   }
@@ -162,6 +167,6 @@ bool Image::operator<<(File *file_object) {
   if (file_object->is_directory()) {
     return add_directory((Directory *) file_object);
   } else {
-    return add_file(file_object);
+    return add_file(file_object, false);
   }
 }

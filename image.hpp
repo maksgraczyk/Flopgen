@@ -9,7 +9,7 @@ class Image {
 private:
   bool open;
   FATFS *fs;
-  bool add_file(File *file_object);
+  bool add_file(File *file_object, bool path_with_dirs=true);
   bool add_directory(Directory *dir);
 public:
   Image(std::string filename, FloppySize size, int code_page);
