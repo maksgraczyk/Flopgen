@@ -158,10 +158,10 @@ bool run(Options &options) {
   bool at_least_one_file = false;
   
   for (File *file : files) {
-    if (file->get_size() > current_floppy->get_size()) {
-      cerr << file->get_path_str() << " "
-           << (file->is_directory() ? "(directory)" : "")
-           << " is larger than the image size, ignoring." << endl;
+    if (!current_floppy->fit_capacity(file)) {
+      cerr << file->get_path_str()
+           << (file->is_directory() ? " (directory)" : "")
+           << " takes more disk space than the image size, ignoring." << endl;
       continue;
     }
 
