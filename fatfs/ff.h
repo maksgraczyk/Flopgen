@@ -1,3 +1,6 @@
+/* MKFS_PARM has been modified by the author of Flopgen for the purpose of
+   making Flopgen work correctly. */
+
 /*----------------------------------------------------------------------------/
 /  FatFs - Generic FAT Filesystem module  R0.14                               /
 /-----------------------------------------------------------------------------/

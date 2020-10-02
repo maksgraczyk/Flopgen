@@ -1,3 +1,6 @@
+/* f_mkfs() has been modified by the author of Flopgen for the purpose of
+   making Flopgen work correctly. */
+
 /*----------------------------------------------------------------------------/
 /  FatFs - Generic FAT Filesystem Module  R0.14                               /
 /-----------------------------------------------------------------------------/
