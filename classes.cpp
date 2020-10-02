@@ -143,12 +143,38 @@ Floppy::Floppy(FloppySize size, int code_page) {
   free_space = (size * BYTES_IN_KB) / cluster_size - 2;
 }
 
-bool Floppy::add_file(File *file) {
+bool Floppy::fit(File *file, int *cl_size) {
   int file_size = file->get_size();
-  int cl_size = file_size / cluster_size
-    + (file_size % cluster_size > 0) * cluster_size;
+  int c_size = file_size / cluster_size
+    + ((file_size % cluster_size) > 0);
+
+  if (c_size > free_space) {
+    return false;
+  }
+
+  if (cl_size != NULL) {
+    *cl_size = c_size;
+  }
   
-  if (cl_size > free_space) {
+  return true;
+}
+
+bool Floppy::fit_capacity(File *file) {
+  int file_size = file->get_size();
+  int c_size = file_size / cluster_size
+    + ((file_size % cluster_size) > 0);
+
+  if (c_size > (size * BYTES_IN_KB) / cluster_size - 2) {
+    return false;
+  }
+  
+  return true;
+}
+
+bool Floppy::add_file(File *file) {
+  int cl_size;
+  
+  if (!fit(file, &cl_size)) {
     return false;
   }
 

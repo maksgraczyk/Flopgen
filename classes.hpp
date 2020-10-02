@@ -54,6 +54,8 @@ private:
   int code_page;
 public:
   Floppy(FloppySize size, int code_page);
+  bool fit(File *file, int *cl_size=NULL);
+  bool fit_capacity(File *file);
   bool add_file(File *file);
   int get_size();
   bool save(std::string filename);
