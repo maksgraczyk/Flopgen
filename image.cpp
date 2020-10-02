@@ -150,7 +150,7 @@ bool Image::add_directory(Directory *dir) {
   }
 
   for (int i = 0; i < dir->get_file_count(); i++) {
-    if (!add_file((*dir)[i])) {
+    if (!(*this << (*dir)[i])) {
       return false;
     }
   }
