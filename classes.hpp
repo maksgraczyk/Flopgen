@@ -18,7 +18,7 @@ public:
   virtual ~File();
   static File *get_instance(std::string path);
   virtual std::fstream *get_stream();
-  std::string get_path_str();
+  std::string get_path_str(bool with_dirs=true);
   virtual bool is_directory();
   virtual int get_size();
 };

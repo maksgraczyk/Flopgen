@@ -62,8 +62,12 @@ bool File::is_directory() {
   return false;
 }
 
-string File::get_path_str() {
-  return path.generic_string();
+string File::get_path_str(bool with_dirs) {
+  if (with_dirs) {
+    return path.generic_string();
+  } else {
+    return path.filename();
+  }
 }
 
 int File::get_size() {
