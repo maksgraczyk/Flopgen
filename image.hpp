@@ -13,9 +13,9 @@ private:
   bool add_directory(Directory *dir);
 public:
   Image(std::string filename, FloppySize size, int code_page);
+  ~Image();
   bool is_open();
   bool operator<<(File *file_object);
-  void close();
 };
 
 #endif

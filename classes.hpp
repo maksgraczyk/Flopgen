@@ -15,6 +15,7 @@ protected:
   std::filesystem::path path;
 public:
   File(std::filesystem::path path, bool image, bool init_stream=true);
+  virtual ~File();
   static File *get_instance(std::string path);
   virtual std::fstream *get_stream();
   std::string get_path_str();
@@ -28,6 +29,7 @@ private:
   int total_size;
 public:
   Directory(std::filesystem::path path);
+  ~Directory();
   std::fstream *get_stream();
   bool is_directory();
   int get_size();

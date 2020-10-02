@@ -85,6 +85,14 @@ Image::Image(string filename, FloppySize size, int code_page) {
   file_disk_free();
 }
 
+Image::~Image() {
+  if (open) {
+    f_mount(NULL, "", 0);
+    delete fs;
+    file_disk_free();
+  }
+}
+
 bool Image::is_open() {
   return open;
 }
@@ -156,9 +164,4 @@ bool Image::operator<<(File *file_object) {
   } else {
     return add_file(file_object);
   }
-}
-
-void Image::close() {
-  f_mount(NULL, "", 0);
-  file_disk_free();
 }

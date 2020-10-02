@@ -21,6 +21,13 @@ File::File(filesystem::path path, bool image, bool init_stream) {
   this->path = path;
 }
 
+File::~File() {
+  if (stream != NULL) {
+    stream->close();
+    delete stream;
+  }
+}
+
 File *File::get_instance(string path) {
   filesystem::path fs_path(path);
   File *instance;
@@ -84,6 +91,12 @@ Directory::Directory(filesystem::path path) : File(path, false, false) {
       cerr << entry.path().generic_string()
            << " is neither a directory nor a regular file, ignoring." << endl;
     }
+  }
+}
+
+Directory::~Directory() {
+  for (File *file : files) {
+    delete file;
   }
 }
 
@@ -160,12 +173,10 @@ bool Floppy::save(string filename) {
     bool success = image << files[i];
 
     if (!success) {
-      image.close();
       return false;
     }
   }
   
-  image.close();
   return true;
 }
 
