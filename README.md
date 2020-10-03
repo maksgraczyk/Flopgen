@@ -12,13 +12,13 @@ This program should be especially useful for people who need to transfer files f
 
 ## Installation
 ### Pre-built binaries
-You can download pre-built binaries for the latest version of the `main` branch from the releases page.
+You can download pre-built binaries from the releases page.
 
 ### From source code
 1. Make sure that a compiler supporting the C++17 standard is installed on your machine.
 2. Clone the repository: `git clone https://github.com/maksgraczyk/Flopgen`.
 3. Navigate to the directory where you have cloned the repository and run `make`.
-4. Done! You can run Flopgen by executing `./flopgen`.
+4. Done! You can run Flopgen by executing e.g. `./flopgen` on Linux/Unix.
 
 ## How to use
 For the first use, running `flopgen --help` is recommended. This will display a help message explaining how to use the program along with all available flags and options.
