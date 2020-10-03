@@ -11,8 +11,8 @@ This program should be especially useful for people who need to transfer files f
 * Processing both files and directories supplied by the user (directories are always processed recursively)
 
 ## Installation
-### Pre-built binaries
-You can download pre-built binaries from the releases page.
+### Pre-built binaries (ready to use, recommended)
+You can download pre-built binaries from [the releases page](https://github.com/maksgraczyk/Flopgen/releases).
 
 ### From source code
 1. Make sure that a compiler supporting the C++17 standard is installed on your machine.
