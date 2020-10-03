@@ -15,4 +15,4 @@ main.o: main.cpp classes.hpp cli/CLI11.hpp
 .PHONY: clean
 
 clean:
-	rm -f *.o fatfs/*.o flopgen
+	rm -f *.o fatfs/*.o flopgen flopgen.exe

@@ -84,7 +84,7 @@ string File::get_path_str(bool with_dirs) {
   if (with_dirs) {
     return path.generic_string();
   } else {
-    return path.filename();
+    return path.filename().generic_string();
   }
 }
 
