@@ -20,6 +20,8 @@
 #include <iostream>
 #include "cli/CLI11.hpp"
 
+#define VERSION "0.1.0"
+
 using namespace std;
 
 struct Options {
@@ -38,7 +40,8 @@ bool run(Options &options);
 
 int main(int argc, char** argv) {
   CLI::App app
-    {"Flopgen: a tool for automatic creation of IMG floppy disk images"};
+    {(string)"Flopgen " + VERSION + ": a tool for automatic creation of "
+     "IMG floppy disk images"};
 
   Options options;
 
