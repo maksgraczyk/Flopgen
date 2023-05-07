@@ -2,7 +2,6 @@ CXXFLAGS = --std=c++17
 
 CC = $(CXX)
 CCFLAGS = $(CXXFLAGS)
-LDFLAGS = -lstdc++fs
 
 flopgen: fatfs/diskio.o fatfs/fattime.o fatfs/ff.o fatfs/ffsystem.o fatfs/ffunicode.o classes.o image.o filediskio.o main.o
 	$(CXX) -o $@ $^ $(LDFLAGS)
